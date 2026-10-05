@@ -23,7 +23,7 @@ public class _01_spout extends BaseRichSpout {
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector collector) {
         this.collector = collector;
         try {
-            this.bufferedReader = new BufferedReader(new FileReader("C:\\Users\\Administrator\\Desktop\\02storm\\原数据\\app.log"));
+            this.bufferedReader = new BufferedReader(new FileReader("input/app.log"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

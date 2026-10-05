@@ -22,7 +22,7 @@ public class _02_spout extends BaseRichSpout {
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector collector) {
         this.collector = collector;
         try {
-            this.bufferedReader = new BufferedReader(new FileReader("C:\\Users\\Administrator\\Desktop\\02storm\\原数据\\ip_area_isp.txt"));
+            this.bufferedReader = new BufferedReader(new FileReader("input/ip_area_isp.txt"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
