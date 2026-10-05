@@ -1,26 +1,54 @@
 # 05-storm-base
 
-This project is a small Apache Storm learning/demo project built with Java and Maven. It contains several local-topology examples that show how to create Spouts, connect Bolts, and process streaming data in a Storm pipeline.
+A Java-based Apache Storm learning project that demonstrates how to build local Storm topologies, process streaming data, and integrate with MySQL for ETL-style data handling.
 
-The code is organized as a set of beginner-friendly examples for understanding stream processing concepts such as data generation, splitting, counting, filtering, and basic ETL-style processing.
+This repository is mainly a practical demo project for learning Storm concepts such as Spouts, Bolts, grouping, tuple processing, local mode execution, and simple data pipelines.
 
-## Overview
+## Project overview
 
-The project uses Apache Storm in local mode with a `TopologyBuilder` and `LocalCluster` to run topologies directly on a single machine for testing and learning.
+The project contains several small example topologies under `src/main/java/com/itbys/storm_demo`:
 
-The main packages under `src/main/java/com/itbys/storm_demo` include:
+- `demo01`: a minimal topology that emits numbers and prints them
+- `demo02_wc`: a word-count pipeline
+- `demo03_work`: a multi-source processing example
+- `work/demo01_ETLmysql`: ETL-style file-to-MySQL processing
+- `work/demo02_conn_region`: IP region matching and longitude/latitude enrichment workflow
 
-- `demo01`: a basic stream example where a Spout emits random numbers and a Bolt receives them.
-- `demo02_wc`: a word-count topology made of several stages: Spout -> Split Bolt -> Count Bolt -> Print Bolt.
-- `demo03_work`: a multi-source topology where several Spouts send data into a shared Bolt.
-- `work/demo01_ETLmysql`: a data-processing example that reads input data and performs ETL-like processing using MySQL connectivity.
-- `work/demo02_conn_region`: a region/correlation style data-processing pipeline.
+These examples are intentionally simple and educational rather than production-ready.
 
-## Project structure
+## Tech stack
+
+- Java
+- Maven
+- Apache Storm 1.1.1
+- MySQL Connector/J 5.1.46
+
+## Maven dependencies
+
+The project uses the following dependencies declared in `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.apache.storm</groupId>
+    <artifactId>storm-core</artifactId>
+    <version>1.1.1</version>
+</dependency>
+
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.46</version>
+</dependency>
+```
+
+## Repository structure
 
 ```text
 05-storm-base/
 ├── pom.xml
+├── README.md
+├── input/
+├── logs/
 ├── src/
 │   ├── main/
 │   │   └── java/
@@ -39,42 +67,74 @@ The main packages under `src/main/java/com/itbys/storm_demo` include:
 └── target/
 ```
 
+## Example modules
+
+### demo01
+
+The smallest working Storm topology.
+
+- `_01_spout` emits random integers
+- `_02_bolt` prints each value
+- `_03_topology` creates a topology and runs it in local mode
+
+This is the basic introduction to a Spout + Bolt topology.
+
+### demo02_wc
+
+A classic word-count streaming example.
+
+- `_01_spout` emits log lines
+- `_02_splitBolt` splits text into words
+- `_03_countBolt` counts word occurrences with a `HashMap`
+- `_04_printBolt` prints `word:count`
+- `_99_topology` submits the whole pipeline locally
+
+### demo03_work
+
+A multi-source topology that combines several Spouts and a shared Bolt.
+
+This demonstrates how multiple data sources can feed into one processing stage using `shuffleGrouping`.
+
+### work/demo01_ETLmysql
+
+A file-based ETL example that inserts text file data into MySQL tables.
+
+- `_01_spout` reads `input/ip_area_isp.txt`
+- `_02_spout` reads `input/lng_lat.txt`
+- `_03_bolt` writes the content into MySQL tables such as `ip_area_isp` and `lng_lat_mapping`
+
+### work/demo02_conn_region
+
+A more realistic analytics-flow example.
+
+- `_01_spout` reads `input/app.log`
+- `_02_bolt` parses IP and queries MySQL for region information
+- `_03_bolt` looks up longitude/latitude and writes result rows to `phone_ip_lng_lat`
+
+This is the most complete example in the project and shows a typical data-enrichment pipeline.
+
 ## Prerequisites
 
-Before running the demos, make sure you have:
+Before running the examples, ensure you have:
 
-- JDK 8 or above
+- JDK 8 or newer
 - Maven
-- An IDE such as IntelliJ IDEA or Eclipse (recommended for running the topology main classes)
-- MySQL driver support for the data-processing examples
+- IntelliJ IDEA or Eclipse
+- MySQL server if you are running the database examples
 
-## Dependencies
+## Build
 
-The project uses Maven and includes:
-
-- `org.apache.storm:storm-core:1.1.1`
-- `mysql:mysql-connector-java:5.1.46`
-
-These dependencies are declared in `pom.xml`.
-
-## Quick start
-
-1. Clone the project:
-
-```bash
-git clone https://github.com/Ari0714/05-storm-base.git
-cd 05-storm-base
-```
-
-2. Build the project:
+From the project root, run:
 
 ```bash
 mvn clean package
 ```
 
-3. Run any topology class that contains a `main` method from your IDE.
+## Run the examples
 
-Examples include:
+The project is intended to be run from an IDE by executing the `main` methods in the topology classes.
+
+Example entries:
 
 - `com.itbys.storm_demo.demo01._03_topology`
 - `com.itbys.storm_demo.demo02_wc._99_topology`
@@ -82,44 +142,51 @@ Examples include:
 - `com.itbys.storm_demo.work.demo01_ETLmysql._99_topology`
 - `com.itbys.storm_demo.work.demo02_conn_region._99_topology`
 
-## Example behavior
+## Input data
 
-### 1. Basic demo
+The current code expects data files inside a project-local `input` directory:
 
-`demo01` creates a simple Storm topology with a Spout that emits random numbers and a Bolt that processes them.
-
-### 2. Word count demo
-
-`demo02_wc` demonstrates a classic streaming pipeline:
-
-- Spout emits log lines
-- Split Bolt breaks text into words
-- Count Bolt aggregates counts
-- Print Bolt outputs the final results
-
-### 3. ETL-style demo
-
-`work/demo01_ETLmysql` reads data from a file, passes it through a stream processing flow, and interacts with MySQL for database-related logic.
-
-## Important note about file paths
-
-Some sample Spouts use hard-coded local Windows file paths such as:
-
-```java
-C:\Users\Administrator\Desktop\02storm\原数据\...
+```text
+05-storm-base/
+├── input/
+│   ├── app.log
+│   ├── ip_area_isp.txt
+│   └── lng_lat.txt
+└── src/
 ```
 
-These paths are environment-specific and may not exist on your machine. If you run the file-based examples, update those paths to match your local dataset location before executing the topologies.
+The code uses paths like:
 
-## Learning purpose
+```java
+"input/app.log"
+"input/ip_area_isp.txt"
+"input/lng_lat.txt"
+```
 
-This repository is intended as a practical Storm sandbox for learning:
+If the files are missing, the Spouts will fail to open them and may throw a `FileNotFoundException`.
 
-- how topologies are built
-- how Spouts and Bolts communicate
-- how streams are split and aggregated
-- how local-mode Storm applications are tested and debugged
+## MySQL configuration
+
+The database examples use hard-coded JDBC settings such as:
+
+```java
+jdbc:mysql://hdp103:3306/test
+```
+
+with:
+
+- username: `root`
+- password: `111111`
+
+These values are example-specific and should be adjusted to your local MySQL setup before executing the ETL examples.
+
+## Notes
+
+- This project is for learning and experimentation.
+- The code is intentionally simple and occasionally rough.
+- Many examples use static file paths and hard-coded database settings.
+- Some older files may still contain legacy absolute Windows paths, but the newer examples prefer the `input/` folder.
 
 ## License
 
-This project does not currently declare an explicit license file. Please check with the repository owner before using it in production or redistribution.
+No explicit license file is included in this repository. If you want to reuse or redistribute this project, confirm the licensing terms with the repository owner before doing so.
